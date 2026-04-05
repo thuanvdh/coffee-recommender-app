@@ -1,12 +1,18 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Search, Info, Edit3, Menu, LogOut } from 'lucide-react'
+import { Home, Search, Info, Edit3, Menu, LogOut, Map as MapIcon, Heart, Moon, Sun } from 'lucide-react'
 
 function Header({ isScrolled, toggleDrawer }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [isAdmin, setIsAdmin] = React.useState(!!localStorage.getItem('admin_user'))
+  const [theme, setTheme] = React.useState(localStorage.getItem('theme') || 'light')
   const isActive = (path) => location.pathname === path || (path === '/' && location.pathname === '/index.html')
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   React.useEffect(() => {
     const checkAuth = () => {
@@ -27,12 +33,7 @@ function Header({ isScrolled, toggleDrawer }) {
       <div className="header__inner">
         <Link to="/" className="header__logo">
           <div className="logo-icon">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#2C3E50"/>
-              <path d="M10 10C10 8.89543 10.8954 8 12 8H20C21.1046 8 22 8.89543 22 10V14C22 17.3137 19.3137 20 16 20C12.6863 20 10 17.3137 10 14V10Z" fill="#C17A2F"/>
-              <path d="M22 12H23C24.1046 12 25 12.8954 25 14C25 15.1046 24.1046 16 23 16H22V12Z" fill="#C17A2F"/>
-              <path d="M11 24H21" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
+            <img src="/favicon.png" alt="Danang Coffee Logo" width="32" height="32" style={{ borderRadius: '8px', objectFit: 'cover' }} />
           </div>
           <div className="logo-text">
             <span className="logo-text__name">Danang</span>
@@ -49,6 +50,14 @@ function Header({ isScrolled, toggleDrawer }) {
             <Search size={18} />
             Tìm kiếm
           </Link>
+          <Link to="/map" className={`header__nav-link ${isActive('/map') ? 'header__nav-link--active' : ''}`}>
+            <MapIcon size={18} />
+            Bản đồ
+          </Link>
+          <Link to="/favorites" className={`header__nav-link ${isActive('/favorites') ? 'header__nav-link--active' : ''}`}>
+            <Heart size={18} />
+            Yêu thích
+          </Link>
           <Link to="/suggest" className={`header__nav-link ${isActive('/suggest') ? 'header__nav-link--active' : ''}`}>
             <Edit3 size={18} />
             Đề xuất
@@ -57,6 +66,15 @@ function Header({ isScrolled, toggleDrawer }) {
             <Info size={18} />
             Giới thiệu
           </Link>
+          
+          <button 
+            className="header__nav-link" 
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: 'auto' }}
+            title="Chế độ ban đêm"
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} color="#D4BBA5" />}
+          </button>
           {isAdmin && (
             <>
               <Link to="/admin/suggestions" className={`header__nav-link ${isActive('/admin/suggestions') ? 'header__nav-link--active' : ''}`} style={{ color: '#0369A1' }}>

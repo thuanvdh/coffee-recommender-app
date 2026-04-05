@@ -1,10 +1,19 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Clock } from 'lucide-react'
+import { Clock, Heart } from 'lucide-react'
 import { isShopOpenNow } from '../utils/time'
+import { toggleFavorite, isFavorite } from '../utils/favorites'
 
 function ShopCard({ shop }) {
   const isOpen = isShopOpenNow(shop.opening_hours);
+  const [favorite, setFavorite] = React.useState(isFavorite(shop.id));
+  
+  React.useEffect(() => {
+    const handleFavChange = () => setFavorite(isFavorite(shop.id));
+    window.addEventListener('favoritesChanged', handleFavChange);
+    return () => window.removeEventListener('favoritesChanged', handleFavChange);
+  }, [shop.id]);
+
   let badgeText = '';
   
   if (!isOpen) {
@@ -25,6 +34,23 @@ function ShopCard({ shop }) {
             📍 {(Math.round(shop.distance_km * 10) / 10).toFixed(1)} km
           </span>
         )}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(shop.id);
+            setFavorite(!favorite);
+          }}
+          style={{
+            position: 'absolute', top: '10px', right: '10px', background: 'rgba(255,255,255,0.8)', 
+            border: 'none', borderRadius: '50%', width: '30px', height: '30px', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            color: favorite ? '#E74C3C' : '#95A5A6', zIndex: 3, backdropFilter: 'blur(4px)',
+            transition: 'all 0.3s'
+          }}
+        >
+          <Heart size={16} fill={favorite ? '#e74c3c' : 'none'} />
+        </button>
         <button 
           className="shop-card__map-link"
           onClick={(e) => {

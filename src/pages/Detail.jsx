@@ -1,40 +1,39 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { 
-  MapPin, Clock, CreditCard, Phone, MessageSquare, Flame, Star, 
-  Wifi, Snowflake, Car, Computer, Users, TreePine, 
-  Camera, VolumeX, Music, Cigarette, BookOpen, Check 
-} from 'lucide-react'
-import { fetchShopBySlug } from '../api'
-import toast from 'react-hot-toast'
+import { MapPin, Clock, CreditCard, Phone, MessageSquare, Flame, Star, Send } from 'lucide-react'
+import { fetchShopBySlug, submitReview } from '../api'
 
 function Detail() {
   const [searchParams] = useSearchParams()
   const slug = searchParams.get('slug')
   const [shop, setShop] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [showReviewModal, setShowReviewModal] = useState(false)
-  const [reviews, setReviews] = useState([])
-  const [rating, setRating] = useState(5)
-  const [reviewText, setReviewText] = useState('')
+  const [activeImg, setActiveImg] = useState(null)
+  const [newReview, setNewReview] = useState({ user_name: '', rating: 5, comment: '' })
+  const [hoverRating, setHoverRating] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const [reviewNotice, setReviewNotice] = useState(null)
 
-  const handleSubmitReview = () => {
-    if (!reviewText.trim()) {
-      toast.error('Vui lòng nhập nội dung nhận xét!');
-      return;
+  const getRatingLabel = (rating) => {
+    switch (rating) {
+      case 1: return 'Tồi tệ 😞';
+      case 2: return 'Tạm ổn 😐';
+      case 3: return 'Khá tốt 🙂';
+      case 4: return 'Rất tốt 😀';
+      case 5: return 'Tuyệt vời! 😍';
+      default: return '';
     }
-    const newReview = {
-      author: 'Bạn',
-      rating,
-      text: reviewText,
-      date: 'Vừa xong'
-    };
-    setReviews([newReview, ...reviews]);
-    setShowReviewModal(false);
-    setReviewText('');
-    setRating(5);
-    toast.success('Gửi nhận xét thành công! Cảm ơn đóng góp của bạn.');
-  };
+  }
+
+  const getInitial = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length > 0) {
+      return parts[parts.length - 1].charAt(0).toUpperCase();
+    }
+    return 'U';
+  }
+
 
   useEffect(() => {
     if (slug) {
@@ -42,10 +41,53 @@ function Detail() {
       fetchShopBySlug(slug).then(data => {
         setShop(data)
         setLoading(false)
-        if (data) document.title = `${data.name} - Danang Coffee`
+        if (data) {
+          document.title = `${data.name} - Danang Coffee`
+          setActiveImg(data.image_url)
+        }
       })
     }
   }, [slug])
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const userName = newReview.user_name.trim();
+    const comment = newReview.comment.trim();
+
+    if (!userName || !comment) {
+      setReviewNotice({
+        type: 'error',
+        message: 'Vui lòng nhập tên và nội dung đánh giá.'
+      });
+      return;
+    }
+
+    setReviewNotice(null);
+    setSubmitting(true);
+    try {
+      const addedReview = await submitReview(shop.id, {
+        ...newReview,
+        user_name: userName,
+        comment
+      });
+      setShop({
+        ...shop,
+        reviews: [addedReview, ...(shop.reviews || [])]
+      });
+      setNewReview({ user_name: '', rating: 5, comment: '' });
+      setReviewNotice({
+        type: 'success',
+        message: 'Cảm ơn bạn đã gửi nhận xét.'
+      });
+    } catch (err) {
+      setReviewNotice({
+        type: 'error',
+        message: 'Có lỗi xảy ra khi gửi nhận xét. Vui lòng thử lại.'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '10rem' }}>Đang tải thông tin quán...</div>
   if (!shop) return <div style={{ textAlign: 'center', padding: '10rem' }}>Không tìm thấy thông tin quán.</div>
@@ -54,28 +96,32 @@ function Detail() {
                     shop.status === 'closed_temp' ? 'Tạm đóng' :
                     shop.status === 'closed_permanent' ? 'Đã đóng' : '';
 
-  const getTagIcon = (tag) => {
-    const t = tag.toLowerCase()
-    if (t.includes('wifi')) return <Wifi size={14} />
-    if (t.includes('điều hòa') || t.includes('máy lạnh')) return <Snowflake size={14} />
-    if (t.includes('xe') || t.includes('bãi đỗ')) return <Car size={14} />
-    if (t.includes('thẻ') || t.includes('thanh toán')) return <CreditCard size={14} />
-    if (t.includes('làm việc') || t.includes('laptop')) return <Computer size={14} />
-    if (t.includes('hẹn hò') || t.includes('nhóm')) return <Users size={14} />
-    if (t.includes('ngoài trời') || t.includes('sân vườn') || t.includes('hiên')) return <TreePine size={14} />
-    if (t.includes('chụp ảnh') || t.includes('sống ảo') || t.includes('check')) return <Camera size={14} />
-    if (t.includes('yên tĩnh')) return <VolumeX size={14} />
-    if (t.includes('nhạc') || t.includes('acoustic')) return <Music size={14} />
-    if (t.includes('hút thuốc')) return <Cigarette size={14} />
-    if (t.includes('sách')) return <BookOpen size={14} />
-    return <Check size={14} />
-  }
-
   return (
     <article className="shop-detail">
       <div className="shop-detail__main">
-        <div className="shop-detail__gallery">
-          <img src={shop.image_url || '/images/shop-1.jpg'} alt={shop.name} />
+        <div className="shop-detail__gallery-v2">
+          <div className="gallery-main">
+            <img src={activeImg || shop.image_url || '/images/shop-1.jpg'} alt={shop.name} className="gallery-main__img" referrerPolicy="no-referrer" />
+          </div>
+          {shop.images && shop.images.length > 0 && (
+            <div className="gallery-thumbs">
+              <div 
+                className={`gallery-thumb ${activeImg === shop.image_url ? 'gallery-thumb--active' : ''}`}
+                onClick={() => setActiveImg(shop.image_url)}
+              >
+                <img src={shop.image_url} alt="Main" referrerPolicy="no-referrer" />
+              </div>
+              {shop.images.map((img) => (
+                <div 
+                  key={img.id} 
+                  className={`gallery-thumb ${activeImg === img.url ? 'gallery-thumb--active' : ''}`}
+                  onClick={() => setActiveImg(img.url)}
+                >
+                  <img src={img.url} alt={img.alt_text} referrerPolicy="no-referrer" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="shop-detail__info">
           <div className="shop-detail__header">
@@ -108,11 +154,9 @@ function Detail() {
           <div className="shop-detail__section">
             <h2 className="shop-detail__section-title">Tiện ích & Không gian</h2>
             <div className="shop-detail__tags">
-              {[...(shop.purposes || []), ...(shop.spaces || []), ...(shop.amenities || [])].map(tag => (
-                <span key={tag} className="shop-detail__tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  {getTagIcon(tag)} {tag}
-                </span>
-              ))}
+              {shop.purposes.map(p => <span key={p} className="shop-detail__tag">{p}</span>)}
+              {shop.spaces.map(s => <span key={s} className="shop-detail__tag">{s}</span>)}
+              {shop.amenities.map(a => <span key={a} className="shop-detail__tag">{a}</span>)}
             </div>
           </div>
 
@@ -203,28 +247,118 @@ function Detail() {
               )}
             </div>
           )}
-
-          {/* REVIEWS SECTION */}
-          <div className="shop-detail__section mt-8">
-            <h2 className="shop-detail__section-title">Nhận xét từ cộng đồng ({reviews.length})</h2>
-            {reviews.length === 0 ? (
-              <p className="shop-detail__desc" style={{ marginTop: '1rem' }}>Chưa có nhận xét nào. Hãy là người đầu tiên đánh giá quán này!</p>
-            ) : (
-              <div className="reviews-list">
-                {reviews.map((r, idx) => (
-                  <div key={idx} className="review-item">
-                    <div className="review-header">
-                      <span className="review-author">{r.author}</span>
-                      <span className="review-rating">{Array(r.rating).fill('★').join('')}{Array(5-r.rating).fill('☆').join('')}</span>
-                    </div>
-                    <p className="review-content">{r.text}</p>
-                    <span className="review-date">{r.date}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
           
+          <div className="shop-detail__section shop-detail__reviews">
+            <h2 className="shop-detail__section-title">Nhận xét từ cộng đồng ({shop.reviews?.length || 0})</h2>
+            
+            <form className="review-form" onSubmit={handleReviewSubmit}>
+              <div className="review-form__header-block">
+                <h3 className="review-form__title">Gửi nhận xét của bạn</h3>
+                <p className="review-form__subtitle">Trải nghiệm của bạn sẽ giúp cộng đồng những người yêu cà phê tìm được quán ưng ý nhất.</p>
+              </div>
+
+              {reviewNotice && (
+                <div className={`review-form__notice review-form__notice--${reviewNotice.type}`} role="status">
+                  {reviewNotice.message}
+                </div>
+              )}
+
+              <div className="review-form__fields">
+                <div className="review-form__group">
+                  <label htmlFor="reviewer-name" className="review-form__label">Tên của bạn</label>
+                  <input 
+                    id="reviewer-name"
+                    type="text" 
+                    placeholder="Nhập tên hiển thị..." 
+                    value={newReview.user_name}
+                    onChange={(e) => {
+                      setNewReview({...newReview, user_name: e.target.value});
+                      if (reviewNotice?.type === 'error') setReviewNotice(null);
+                    }}
+                    className="review-form__input"
+                  />
+                </div>
+                
+                <div className="review-form__group">
+                  <label className="review-form__label">Đánh giá của bạn</label>
+                  <div className="review-form__rating-wrapper">
+                    <div className="review-form__rating">
+                      {[1, 2, 3, 4, 5].map(star => {
+                        const isLit = star <= (hoverRating || newReview.rating);
+                        return (
+                          <Star 
+                            key={star} 
+                            size={22} 
+                            fill={isLit ? "var(--color-accent)" : "none"}
+                            color={isLit ? "var(--color-accent)" : "var(--color-border)"}
+                            onClick={() => setNewReview({...newReview, rating: star})}
+                            onMouseEnter={() => setHoverRating(star)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            className="review-form__star"
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="review-form__rating-desc">
+                      {getRatingLabel(hoverRating || newReview.rating)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="review-form__group">
+                <label htmlFor="reviewer-comment" className="review-form__label">Nội dung nhận xét</label>
+                <textarea 
+                  id="reviewer-comment"
+                  placeholder="Chia sẻ trải nghiệm của bạn (ví dụ: Không gian rộng rãi, đồ uống ngon đặc sắc, phục vụ chu đáo...)" 
+                  value={newReview.comment}
+                  onChange={(e) => {
+                    setNewReview({...newReview, comment: e.target.value});
+                    if (reviewNotice?.type === 'error') setReviewNotice(null);
+                  }}
+                  className="review-form__textarea"
+                ></textarea>
+              </div>
+
+              <button type="submit" className="review-form__submit btn-primary" disabled={submitting}>
+                <Send size={16} /> 
+                <span>{submitting ? 'Đang gửi nhận xét...' : 'Gửi nhận xét ngay'}</span>
+              </button>
+            </form>
+
+            <div className="reviews-list">
+              {shop.reviews && shop.reviews.length > 0 ? (
+                shop.reviews.map((review) => (
+                  <div key={review.id} className="review-item">
+                    <div className="review-item__meta">
+                      <div className="review-item__avatar">
+                        {getInitial(review.user_name)}
+                      </div>
+                      <div className="review-item__meta-text">
+                        <span className="review-item__user">{review.user_name}</span>
+                        <span className="review-item__date">{new Date(review.created_at).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                      <div className="review-item__rating">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star 
+                            key={star} 
+                            size={14} 
+                            fill={star <= review.rating ? "var(--color-accent)" : "none"} 
+                            color={star <= review.rating ? "var(--color-accent)" : "var(--color-border)"} 
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="review-item__comment">{review.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="reviews-empty">
+                  <p>Chưa có nhận xét nào. Hãy là người đầu tiên chia sẻ cảm nhận!</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -269,59 +403,13 @@ function Detail() {
               <MapPin size={20} />
               Chỉ đường
             </a>
-            <button 
-              className="btn-secondary" 
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              onClick={() => setShowReviewModal(true)}
-            >
+            <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <MessageSquare size={20} />
               Gửi nhận xét
             </button>
           </div>
         </div>
       </aside>
-
-      {/* REVIEW MODAL */}
-      {showReviewModal && (
-        <div className="modal-overlay" onClick={() => setShowReviewModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3 style={{ margin: '0 0 1.5rem', fontSize: '1.25rem', color: 'var(--text-main)' }}>Gửi nhận xét cho quán</h3>
-            
-            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Đánh giá của bạn</label>
-              <div className="rating-select" style={{ display: 'flex', gap: '8px' }}>
-                 {[1,2,3,4,5].map(star => (
-                    <Star 
-                      key={star} 
-                      size={28} 
-                      fill={rating >= star ? '#fbbf24' : 'none'} 
-                      color={rating >= star ? '#fbbf24' : 'var(--text-muted)'}
-                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                      onClick={() => setRating(star)} 
-                    />
-                 ))}
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Nội dung nhận xét</label>
-              <textarea 
-                rows={4} 
-                value={reviewText} 
-                onChange={e => setReviewText(e.target.value)} 
-                placeholder="Chia sẻ trải nghiệm của bạn về không gian, đồ uống, nhân viên..."
-                className="form-input"
-              />
-            </div>
-            
-            <div className="modal-actions" style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
-              <button className="btn-secondary" style={{ padding: '8px 16px' }} onClick={() => setShowReviewModal(false)}>Hủy</button>
-              <button className="btn-primary" style={{ padding: '8px 16px' }} onClick={handleSubmitReview}>Gửi đánh giá</button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </article>
   )
 }

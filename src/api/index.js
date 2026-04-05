@@ -111,3 +111,22 @@ export async function rejectSuggestion(id) {
     throw error;
   }
 }
+
+export async function submitReview(shopId, data) {
+  try {
+    const response = await fetch(`${API_BASE}/shops/${shopId}/reviews`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'bypass-tunnel-reminder': 'true'
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Lỗi khi gửi nhận xét:', error);
+    throw error;
+  }
+}
+

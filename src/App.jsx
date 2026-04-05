@@ -8,6 +8,8 @@ import About from './pages/About'
 import Suggest from './pages/Suggest'
 import AdminSuggestions from './pages/AdminSuggestions'
 import Login from './pages/Login'
+import MapPage from './pages/MapPage'
+import Favorites from './pages/Favorites'
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/suggest.html" element={<Suggest />} />
           <Route path="/admin/suggestions" element={<AdminSuggestions />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/favorites" element={<Favorites />} />
         </Routes>
       </Layout>
     </Router>

@@ -8,6 +8,9 @@ function Home() {
   const [filters, setFilters] = useState(null)
   const [newShops, setNewShops] = useState([])
   const [loadingNewShops, setLoadingNewShops] = useState(true)
+  const [weather, setWeather] = useState(null)
+  const [weatherDesc, setWeatherDesc] = useState("")
+  const [suggestionLink, setSuggestionLink] = useState("/search")
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -17,6 +20,26 @@ function Home() {
       if (data && data.shops) setNewShops(data.shops);
       setLoadingNewShops(false)
     });
+
+    // Fetch Weather from Open-Meteo for Da Nang
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=16.0544&longitude=108.2022&current_weather=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data.current_weather) {
+          const w = data.current_weather;
+          setWeather(w);
+          if (w.weathercode >= 51 && w.weathercode <= 67) {
+            setWeatherDesc("Trời đang mưa 🌧️ - Tìm quán có mái che nhé!");
+            setSuggestionLink("/search?space=Máy+lạnh");
+          } else if (w.temperature > 30) {
+            setWeatherDesc("Trời khá oi nóng ☀️ - Trốn nắng ở phòng máy lạnh thôi!");
+            setSuggestionLink("/search?space=Máy+lạnh");
+          } else {
+            setWeatherDesc("Thời tiết rất đẹp ⛅ - Lên sân thượng ngắm phố nào!");
+            setSuggestionLink("/search?space=Thoáng+đãng");
+          }
+        }
+      }).catch(err => console.log('Weather err', err));
   }, [])
 
   useEffect(() => {
@@ -52,6 +75,15 @@ function Home() {
     }
   };
 
+  const handleSurpriseMe = async () => {
+    const data = await fetchShops({ limit: 100 });
+    if (data && data.shops && data.shops.length > 0) {
+      const randomIndex = Math.floor(Math.random() * data.shops.length);
+      const randomShop = data.shops[randomIndex];
+      navigate(`/detail?slug=${randomShop.slug}`);
+    }
+  };
+
   return (
     <>
       <section className="hero fade-in-element">
@@ -60,15 +92,26 @@ function Home() {
             <h1 className="hero__title">Cafe là văn hóa</h1>
             <h2 className="hero__subtitle">Khám phá góc nhỏ tuyệt vời tại Đà Nẵng</h2>
             <p className="hero__desc">Tổng hợp những quán cà phê có không gian đẹp nhất, cà phê ngon nhất và trải nghiệm tuyệt nhất tại thành phố biển.</p>
-            <div className="hero__buttons" style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+            <div className="hero__buttons" style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap' }}>
               <Link to="/search" className="hero__cta">Khám phá ngay</Link>
               <button 
-                onClick={handleNearMe} 
+                onClick={handleSurpriseMe} 
                 className="hero__cta" 
-                style={{ background: 'transparent', border: '2px solid var(--primary-color)', color: 'var(--text-main)', cursor: 'pointer' }}>
-                📍 Gần tôi
+                style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🎲 Bốc Thăm Quán
               </button>
             </div>
+            {weather && (
+              <div className="weather-widget" style={{ marginTop: '20px', padding: '12px 20px', background: 'rgba(255,255,255,0.7)', borderRadius: '12px', display: 'inline-block', backdropFilter: 'blur(10px)', border: '1px solid var(--color-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--color-primary)' }}>{weather.temperature}°C</span>
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-light)' }}>- TP. Đà Nẵng</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: 'var(--color-text)' }}>
+                  {weatherDesc} <Link to={suggestionLink} style={{ color: 'var(--color-skyline)', textDecoration: 'underline' }}>Gợi ý cho bạn &rarr;</Link>
+                </p>
+              </div>
+            )}
           </div>
           <div className="hero__image">
             <img src="/images/hero-illustration.png" alt="Coffee Illustration" />
