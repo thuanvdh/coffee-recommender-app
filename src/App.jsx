@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Search from './pages/Search'
@@ -14,7 +13,6 @@ import Favorites from './pages/Favorites'
 function App() {
   return (
     <Router>
-      <Toaster position="bottom-center" />
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />

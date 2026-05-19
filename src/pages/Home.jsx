@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import { fetchFilters, fetchShops } from '../api'
 import ShopCard, { ShopCardSkeleton } from '../components/ShopCard'
 
@@ -11,6 +10,7 @@ function Home() {
   const [weather, setWeather] = useState(null)
   const [weatherDesc, setWeatherDesc] = useState("")
   const [suggestionLink, setSuggestionLink] = useState("/search")
+  const [geoError, setGeoError] = useState("")
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -61,17 +61,18 @@ function Home() {
   }, [filters]);
 
   const handleNearMe = () => {
+    setGeoError("")
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           navigate(`/search?lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
         },
         (error) => {
-          toast.error("Không thể lấy vị trí. Vui lòng cấp quyền truy cập vị trí cho trình duyệt.");
+          setGeoError("Không thể lấy vị trí. Vui lòng cấp quyền truy cập vị trí cho trình duyệt.");
         }
       );
     } else {
-      toast.error("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+      setGeoError("Trình duyệt của bạn không hỗ trợ định vị GPS.");
     }
   };
 
@@ -101,6 +102,11 @@ function Home() {
                 🎲 Bốc Thăm Quán
               </button>
             </div>
+            {geoError && (
+              <p style={{ marginTop: '12px', color: '#b91c1c', fontWeight: 600, fontSize: '0.92rem' }}>
+                {geoError}
+              </p>
+            )}
             {weather && (
               <div className="weather-widget" style={{ marginTop: '20px', padding: '12px 20px', background: 'rgba(255,255,255,0.7)', borderRadius: '12px', display: 'inline-block', backdropFilter: 'blur(10px)', border: '1px solid var(--color-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
