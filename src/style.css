@@ -29,6 +29,22 @@
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+[data-theme="dark"] {
+  --color-primary: #F4E7D8;
+  --color-primary-light: #D4BBA5;
+  --color-accent: #E8A849;
+  --color-accent-light: #F5C16C;
+  --color-bg: #12100E;
+  --color-bg-light: #1E1A16;
+  --color-bg-section: #181411;
+  --color-text: #F7EFE7;
+  --color-text-light: #C8B8A8;
+  --color-border: #3B3128;
+  --color-skyline: #8FC8D6;
+  --shadow-card: 0 2px 14px rgba(0,0,0,0.35);
+  --shadow-hover: 0 8px 28px rgba(0,0,0,0.45);
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -230,8 +246,25 @@ img {
   transition: background var(--transition);
 }
 
-.drawer__nav a:hover {
+.drawer__nav a:hover,
+.drawer__theme-toggle:hover {
   background: var(--color-bg-light);
+}
+
+.drawer__theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  transition: background var(--transition);
 }
 
 .drawer__nav hr {

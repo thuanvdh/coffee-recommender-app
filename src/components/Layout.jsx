@@ -8,7 +8,13 @@ import BottomNav from './BottomNav'
 function Layout({ children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
   const location = useLocation()
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -23,11 +29,12 @@ function Layout({ children }) {
   }, [])
 
   const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen)
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light')
 
   return (
     <div className="app-container">
-      <Header isScrolled={isScrolled} toggleDrawer={toggleDrawer} />
-      <Drawer isOpen={isDrawerOpen} closeDrawer={() => setIsDrawerOpen(false)} />
+      <Header isScrolled={isScrolled} toggleDrawer={toggleDrawer} theme={theme} toggleTheme={toggleTheme} />
+      <Drawer isOpen={isDrawerOpen} closeDrawer={() => setIsDrawerOpen(false)} theme={theme} toggleTheme={toggleTheme} />
       <main>{children}</main>
       <Footer />
       <BottomNav />

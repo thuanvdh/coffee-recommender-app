@@ -2,17 +2,11 @@ import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Search, Info, Edit3, Menu, LogOut, Map as MapIcon, Trophy, Moon, Sun } from 'lucide-react'
 
-function Header({ isScrolled, toggleDrawer }) {
+function Header({ isScrolled, toggleDrawer, theme, toggleTheme }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [isAdmin, setIsAdmin] = React.useState(!!localStorage.getItem('admin_user'))
-  const [theme, setTheme] = React.useState(localStorage.getItem('theme') || 'light')
   const isActive = (path) => location.pathname === path || (path === '/' && location.pathname === '/index.html')
-
-  React.useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   React.useEffect(() => {
     const checkAuth = () => {
@@ -69,9 +63,9 @@ function Header({ isScrolled, toggleDrawer }) {
           
           <button 
             className="header__nav-link" 
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            onClick={toggleTheme}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: 'auto' }}
-            title="Chế độ ban đêm"
+            title={theme === 'light' ? 'Bật chế độ tối' : 'Bật chế độ sáng'}
           >
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} color="#D4BBA5" />}
           </button>

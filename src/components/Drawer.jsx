@@ -1,8 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { X } from 'lucide-react'
+import { Moon, Sun, X } from 'lucide-react'
 
-function Drawer({ isOpen, closeDrawer }) {
+function Drawer({ isOpen, closeDrawer, theme, toggleTheme }) {
   const [isAdmin, setIsAdmin] = React.useState(!!localStorage.getItem('admin_user'))
 
   React.useEffect(() => {
@@ -34,6 +34,11 @@ function Drawer({ isOpen, closeDrawer }) {
           <Link to="/search" onClick={closeDrawer}>Tìm kiếm</Link>
           <Link to="/favorites" onClick={closeDrawer}>Top 10 quán</Link>
           <Link to="/about" onClick={closeDrawer}>Giới thiệu</Link>
+          <hr />
+          <button className="drawer__theme-toggle" onClick={toggleTheme}>
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            {theme === 'light' ? 'Chế độ tối' : 'Chế độ sáng'}
+          </button>
           <hr />
           <Link to="/suggest" onClick={closeDrawer}>Đề xuất quán mới</Link>
           {isAdmin && (
