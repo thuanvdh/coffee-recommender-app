@@ -1,57 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { getFavorites } from '../utils/favorites';
 import { fetchShops } from '../api';
 import ShopCard from '../components/ShopCard';
 import { Link } from 'react-router-dom';
 
 function Favorites() {
-  const [favoriteShops, setFavoriteShops] = useState([]);
+  const [topRatedShops, setTopRatedShops] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFavoriteShops = async () => {
+    const fetchTopRatedShops = async () => {
       try {
-        const favIds = getFavorites();
-        if (favIds.length === 0) {
-          setFavoriteShops([]);
-          setLoading(false);
-          return;
-        }
+        setLoading(true);
+        const firstPage = await fetchShops({ page: 1, limit: 100 });
+        const total = firstPage?.total || 0;
+        const totalPages = Math.ceil(total / 100);
+        const remainingPages = Array.from(
+          { length: Math.max(totalPages - 1, 0) },
+          (_, index) => index + 2
+        );
+        const remainingResults = await Promise.all(
+          remainingPages.map(page => fetchShops({ page, limit: 100 }))
+        );
+        const shops = [
+          ...(firstPage?.shops || []),
+          ...remainingResults.flatMap(data => data?.shops || [])
+        ];
 
-        // Fetch all shops to filter (or in a real app, query by array of IDs)
-        const data = await fetchShops({});
-        const filtered = (data.shops || []).filter(shop => favIds.includes(shop.id));
-        setFavoriteShops(filtered);
+        const shopsWithRating = shops.map(shop => {
+          const reviews = shop.reviews || [];
+          const reviewCount = reviews.length;
+          const avgRating = reviewCount > 0
+            ? reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviewCount
+            : 0;
+          return {
+            ...shop,
+            avgRating,
+            reviewCount
+          };
+        });
+
+        const sorted = shopsWithRating
+          .sort((a, b) => {
+            if (b.avgRating !== a.avgRating) {
+              return b.avgRating - a.avgRating;
+            }
+            return b.reviewCount - a.reviewCount;
+          })
+          .slice(0, 10);
+
+        setTopRatedShops(sorted);
       } catch (err) {
-        console.error('Error fetching favorites', err);
+        console.error('Error fetching rated shops', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFavoriteShops();
-
-    // Re-fetch when favorites change
-    const onFavChange = () => fetchFavoriteShops();
-    window.addEventListener('favoritesChanged', onFavChange);
-    return () => window.removeEventListener('favoritesChanged', onFavChange);
+    fetchTopRatedShops();
   }, []);
 
   return (
     <main className="search-main" style={{ marginTop: 'var(--header-height)', minHeight: 'calc(100vh - var(--header-height))', padding: '40px 24px' }}>
       <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto' }}>
-        <h2 className="section__title" style={{ textAlign: 'left', marginBottom: '24px' }}>❤️ Góc của tui ({favoriteShops.length})</h2>
+        <h2 className="section__title" style={{ textAlign: 'left', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          🏆 Top 10 quán được đánh giá cao nhất
+        </h2>
+        <p style={{ color: 'var(--color-text-light)', marginBottom: '32px', fontSize: '1rem' }}>
+          Danh sách các quán cà phê có điểm số đánh giá trung bình từ cộng đồng cao nhất tại Đà Nẵng.
+        </p>
+
         {loading ? (
           <p>Đang tải danh sách...</p>
-        ) : favoriteShops.length === 0 ? (
+        ) : topRatedShops.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', background: 'var(--color-bg)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-            <p style={{ color: 'var(--color-text-light)', marginBottom: '16px' }}>Bạn chưa thích quán nào cả! Hãy dạo quanh và chọn vài quán đi nha.</p>
+            <p style={{ color: 'var(--color-text-light)', marginBottom: '16px' }}>Hiện chưa có đánh giá nào được ghi nhận.</p>
             <Link to="/" className="hero__cta">Khám phá ngay</Link>
           </div>
         ) : (
           <div className="shop-grid">
-            {favoriteShops.map(shop => (
-              <ShopCard key={shop.id} shop={shop} />
+            {topRatedShops.map((shop, index) => (
+              <div key={shop.id} style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '-8px',
+                  left: '-8px',
+                  background: index === 0 ? 'linear-gradient(135deg, #F1C40F, #F39C12)' :
+                             index === 1 ? 'linear-gradient(135deg, #BDC3C7, #95A5A6)' :
+                             index === 2 ? 'linear-gradient(135deg, #E67E22, #D35400)' :
+                             'var(--color-primary)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '38px',
+                  height: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                  fontSize: index < 3 ? '1.25rem' : '0.95rem',
+                  zIndex: 5,
+                  border: '2.5px solid white'
+                }}>
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                </div>
+                <ShopCard shop={shop} />
+              </div>
             ))}
           </div>
         )}

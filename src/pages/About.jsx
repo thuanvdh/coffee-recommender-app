@@ -15,7 +15,7 @@ function About() {
               <p style={{ marginBottom: '1rem', color: '#5A6C7D' }}>Chúng mình tạo ra Danang Coffee để giúp bạn dễ dàng tìm thấy "quán ruột" của mình, dù bạn cần không gian để làm việc hiệu quả hay một góc chill cùng bạn bè.</p>
             </div>
             <div className="about-image">
-              <img src="/images/shop-2.jpg" alt="About Us" style={{ borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }} />
+              <img src="/images/shop-2.jpg" alt="About Us" style={{ borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }} referrerPolicy="no-referrer" />
             </div>
           </div>
         </div>

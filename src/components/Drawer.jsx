@@ -32,6 +32,7 @@ function Drawer({ isOpen, closeDrawer }) {
         <nav className="drawer__nav">
           <Link to="/" onClick={closeDrawer}>Trang chủ</Link>
           <Link to="/search" onClick={closeDrawer}>Tìm kiếm</Link>
+          <Link to="/favorites" onClick={closeDrawer}>Top 10 quán</Link>
           <Link to="/about" onClick={closeDrawer}>Giới thiệu</Link>
           <hr />
           <Link to="/suggest" onClick={closeDrawer}>Đề xuất quán mới</Link>

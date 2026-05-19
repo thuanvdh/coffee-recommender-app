@@ -14,6 +14,12 @@ function ShopCard({ shop }) {
     return () => window.removeEventListener('favoritesChanged', handleFavChange);
   }, [shop.id]);
 
+  const reviews = shop.reviews || [];
+  const reviewCount = reviews.length;
+  const avgRating = reviewCount > 0 
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount 
+    : 0;
+
   let badgeText = '';
   
   if (!isOpen) {
@@ -27,7 +33,7 @@ function ShopCard({ shop }) {
   return (
     <Link to={`/detail?slug=${shop.slug}`} className={`shop-card ${!isOpen ? 'is-closed' : ''}`}>
       <div className="shop-card__image">
-        <img src={shop.image_url || '/images/shop-1.jpg'} alt={shop.name} loading="lazy" />
+        <img src={shop.image_url || '/images/shop-1.jpg'} alt={shop.name} loading="lazy" referrerPolicy="no-referrer" />
         {badgeText && <span className={`shop-card__badge ${!isOpen ? 'shop-card__badge--closed' : ''}`}>{badgeText}</span>}
         {shop.distance_km != null && (
           <span className="shop-card__distance" style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 2 }}>
@@ -69,6 +75,16 @@ function ShopCard({ shop }) {
       </div>
       <div className="shop-card__info">
         <div className="shop-card__name line-clamp-2" title={shop.name}>{shop.name}</div>
+        {reviewCount > 0 ? (
+          <div className="shop-card__rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#F1C40F', fontWeight: '600', margin: '4px 0 8px 0' }}>
+            <span>★ {avgRating.toFixed(1)}</span>
+            <span style={{ color: 'var(--color-text-light)', fontWeight: 'normal', fontSize: '0.8rem' }}>({reviewCount} nhận xét)</span>
+          </div>
+        ) : (
+          <div className="shop-card__rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--color-text-light)', margin: '4px 0 8px 0' }}>
+            <span>★ Chưa có đánh giá</span>
+          </div>
+        )}
         {(shop.opening_hours) ? (
           <div className="shop-card__time">
             <Clock size={12} />

@@ -114,7 +114,7 @@ function Home() {
             )}
           </div>
           <div className="hero__image">
-            <img src="/images/hero-illustration.png" alt="Coffee Illustration" />
+            <img src="/images/hero-illustration.png" alt="Coffee Illustration" referrerPolicy="no-referrer" />
           </div>
         </div>
       </section>
@@ -191,7 +191,7 @@ function Home() {
       </section>
 
       <div className="skyline">
-        <img src="/images/skyline.png" alt="Danang Skyline" />
+        <img src="/images/skyline.png" alt="Danang Skyline" referrerPolicy="no-referrer" />
       </div>
     </>
   )

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Search, Info, Edit3, Menu, LogOut, Map as MapIcon, Heart, Moon, Sun } from 'lucide-react'
+import { Home, Search, Info, Edit3, Menu, LogOut, Map as MapIcon, Trophy, Moon, Sun } from 'lucide-react'
 
 function Header({ isScrolled, toggleDrawer }) {
   const location = useLocation()
@@ -33,7 +33,7 @@ function Header({ isScrolled, toggleDrawer }) {
       <div className="header__inner">
         <Link to="/" className="header__logo">
           <div className="logo-icon">
-            <img src="/favicon.png" alt="Danang Coffee Logo" width="32" height="32" style={{ borderRadius: '8px', objectFit: 'cover' }} />
+            <img src="/favicon.png" alt="Danang Coffee Logo" width="32" height="32" style={{ borderRadius: '8px', objectFit: 'cover' }} referrerPolicy="no-referrer" />
           </div>
           <div className="logo-text">
             <span className="logo-text__name">Danang</span>
@@ -55,8 +55,8 @@ function Header({ isScrolled, toggleDrawer }) {
             Bản đồ
           </Link>
           <Link to="/favorites" className={`header__nav-link ${isActive('/favorites') ? 'header__nav-link--active' : ''}`}>
-            <Heart size={18} />
-            Yêu thích
+            <Trophy size={18} />
+            Top 10
           </Link>
           <Link to="/suggest" className={`header__nav-link ${isActive('/suggest') ? 'header__nav-link--active' : ''}`}>
             <Edit3 size={18} />
