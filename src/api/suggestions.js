@@ -2,6 +2,16 @@ import { API_BASE } from './client'
 
 export async function submitSuggestion(data) {
   try {
+    if (data instanceof FormData) {
+      return await fetch(`${API_BASE}/suggestions/with-image`, {
+        method: 'POST',
+        headers: {
+          'bypass-tunnel-reminder': 'true',
+        },
+        body: data,
+      })
+    }
+
     return await fetch(`${API_BASE}/suggestions`, {
       method: 'POST',
       headers: {

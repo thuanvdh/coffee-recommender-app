@@ -4,23 +4,31 @@ import { submitSuggestion } from '../api'
 function Suggest() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     const formData = new FormData(e.target)
-    const data = Object.fromEntries(formData.entries())
 
     // Convert structured inputs to backend format
-    if (data.open_time && data.close_time) {
-      data.opening_hours = `${data.open_time} - ${data.close_time}`
+    const openTime = formData.get('open_time')
+    const closeTime = formData.get('close_time')
+    if (openTime && closeTime) {
+      formData.set('opening_hours', `${openTime} - ${closeTime}`)
     }
-    if (data.min_price && data.max_price) {
-      data.price_range = `${Number(data.min_price).toLocaleString('vi-VN')}đ - ${Number(data.max_price).toLocaleString('vi-VN')}đ`
+    const minPrice = formData.get('min_price')
+    const maxPrice = formData.get('max_price')
+    if (minPrice && maxPrice) {
+      formData.set('price_range', `${Number(minPrice).toLocaleString('vi-VN')}đ - ${Number(maxPrice).toLocaleString('vi-VN')}đ`)
     }
+    formData.delete('open_time')
+    formData.delete('close_time')
+    formData.delete('min_price')
+    formData.delete('max_price')
 
     try {
-      const response = await submitSuggestion(data)
+      const response = await submitSuggestion(formData)
       if (response.ok) {
         setSubmitted(true)
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -33,6 +41,15 @@ function Suggest() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      setImagePreview('')
+      return
+    }
+    setImagePreview(URL.createObjectURL(file))
   }
 
   return (
@@ -103,8 +120,24 @@ function Suggest() {
             <div className="form-section">
               <h3 className="form-section__title">📸 Hình ảnh & Mô tả</h3>
               <div className="form-group">
-                <label className="form-label">Link ảnh đại diện (URL)</label>
-                <input type="text" name="image_url" className="form-input" placeholder="https://..." />
+                <label className="form-label">Ảnh đại diện quán *</label>
+                <label className={`suggest-image-upload ${imagePreview ? 'has-preview' : ''}`}>
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Xem trước ảnh quán" />
+                  ) : (
+                    <span>
+                      Chọn ảnh quán để tải lên Cloudinary
+                      <small>JPG, PNG hoặc WEBP, tối đa 5MB</small>
+                    </span>
+                  )}
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/jpeg,image/png,image/webp"
+                    required
+                    onChange={handleImageChange}
+                  />
+                </label>
               </div>
               <div className="form-group">
                 <label className="form-label">Giới thiệu ngắn về quán</label>

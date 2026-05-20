@@ -2573,6 +2573,53 @@ img {
   padding-bottom: 100px; /* Padding to avoid BottomNav coverage */
 }
 
+.suggest-image-upload {
+  position: relative;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-light);
+  color: var(--color-text-light);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.suggest-image-upload:hover {
+  border-color: var(--color-accent);
+  background: var(--color-bg);
+}
+
+.suggest-image-upload span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+  font-weight: 750;
+}
+
+.suggest-image-upload small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.suggest-image-upload img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
+.suggest-image-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
 @media (max-width: 480px) {
   .input-range .form-input {
     min-width: 80px;
