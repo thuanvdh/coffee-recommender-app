@@ -130,6 +130,8 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .header__nav-link {
@@ -1553,7 +1555,7 @@ img {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1180px) {
   .header__nav {
     display: none;
   }
@@ -1561,7 +1563,9 @@ img {
   .header__hamburger {
     display: flex;
   }
+}
 
+@media (max-width: 768px) {
   .bottom-nav {
     display: flex;
   }
