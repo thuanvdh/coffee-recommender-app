@@ -36,7 +36,7 @@ function ShopCard({ shop }) {
         <img src={shop.image_url || '/images/shop-1.jpg'} alt={shop.name} loading="lazy" referrerPolicy="no-referrer" />
         {badgeText && <span className={`shop-card__badge ${!isOpen ? 'shop-card__badge--closed' : ''}`}>{badgeText}</span>}
         {shop.distance_km != null && (
-          <span className="shop-card__distance" style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold', zIndex: 2 }}>
+          <span className="shop-card__distance">
             📍 {(Math.round(shop.distance_km * 10) / 10).toFixed(1)} km
           </span>
         )}
@@ -47,13 +47,8 @@ function ShopCard({ shop }) {
             toggleFavorite(shop.id);
             setFavorite(!favorite);
           }}
-          style={{
-            position: 'absolute', top: '10px', right: '10px', background: 'rgba(255,255,255,0.8)', 
-            border: 'none', borderRadius: '50%', width: '30px', height: '30px', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            color: favorite ? '#E74C3C' : '#95A5A6', zIndex: 3, backdropFilter: 'blur(4px)',
-            transition: 'all 0.3s'
-          }}
+          className={`shop-card__action-btn ${favorite ? 'shop-card__action-btn--active' : 'shop-card__action-btn--inactive'}`}
+          title={favorite ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
         >
           <Heart size={16} fill={favorite ? '#e74c3c' : 'none'} />
         </button>
@@ -76,12 +71,12 @@ function ShopCard({ shop }) {
       <div className="shop-card__info">
         <div className="shop-card__name line-clamp-2" title={shop.name}>{shop.name}</div>
         {reviewCount > 0 ? (
-          <div className="shop-card__rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#F1C40F', fontWeight: '600', margin: '4px 0 8px 0' }}>
-            <span>★ {avgRating.toFixed(1)}</span>
-            <span style={{ color: 'var(--color-text-light)', fontWeight: 'normal', fontSize: '0.8rem' }}>({reviewCount} nhận xét)</span>
+          <div className="shop-card__rating">
+            <span className="shop-card__rating-stars">★ {avgRating.toFixed(1)}</span>
+            <span className="shop-card__rating-count">({reviewCount} nhận xét)</span>
           </div>
         ) : (
-          <div className="shop-card__rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: 'var(--color-text-light)', margin: '4px 0 8px 0' }}>
+          <div className="shop-card__rating shop-card__rating--empty">
             <span>★ Chưa có đánh giá</span>
           </div>
         )}
@@ -118,6 +113,7 @@ export function CTACard({ text }) {
     </div>
   )
 }
+
 export function ShopCardSkeleton() {
   return (
     <div className="shop-card shop-card--skeleton" style={{ cursor: 'default' }}>
