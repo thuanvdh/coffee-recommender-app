@@ -2641,12 +2641,56 @@ img {
 }
 
 .gallery-main {
+  position: relative;
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   aspect-ratio: 16 / 9;
   background: var(--color-bg-light);
+}
+
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: var(--transition);
+  z-index: 10;
+}
+
+[data-theme="dark"] .gallery-nav-btn {
+  background: rgba(30, 25, 22, 0.85);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-nav-btn:hover {
+  background: var(--color-accent);
+  color: #fff;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.gallery-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.gallery-nav-btn--prev {
+  left: 16px;
+}
+
+.gallery-nav-btn--next {
+  right: 16px;
 }
 
 .gallery-main__img {

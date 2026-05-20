@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { MapPin, Clock, CreditCard, Phone, MessageSquare, Flame, Star, Send } from 'lucide-react'
+import { MapPin, Clock, CreditCard, Phone, MessageSquare, Flame, Star, Send, ChevronLeft, ChevronRight } from 'lucide-react'
 import { fetchShopBySlug, submitReview } from '../api'
 
 function Detail() {
@@ -13,6 +13,20 @@ function Detail() {
   const [hoverRating, setHoverRating] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [reviewNotice, setReviewNotice] = useState(null)
+  const thumbsRef = useRef(null)
+
+  useEffect(() => {
+    if (thumbsRef.current) {
+      const activeThumb = thumbsRef.current.querySelector('.gallery-thumb--active');
+      if (activeThumb) {
+        activeThumb.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  }, [activeImg]);
 
   const getRatingLabel = (rating) => {
     switch (rating) {
@@ -48,6 +62,24 @@ function Detail() {
       })
     }
   }, [slug])
+
+  const allImages = shop
+    ? [shop.image_url, ...(shop.images || []).map((img) => img.url)].filter(Boolean)
+    : [];
+
+  const handlePrevImg = () => {
+    if (allImages.length <= 1) return;
+    const currentIdx = allImages.indexOf(activeImg || shop.image_url);
+    const prevIdx = (currentIdx - 1 + allImages.length) % allImages.length;
+    setActiveImg(allImages[prevIdx]);
+  };
+
+  const handleNextImg = () => {
+    if (allImages.length <= 1) return;
+    const currentIdx = allImages.indexOf(activeImg || shop.image_url);
+    const nextIdx = (currentIdx + 1) % allImages.length;
+    setActiveImg(allImages[nextIdx]);
+  };
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -102,9 +134,29 @@ function Detail() {
         <div className="shop-detail__gallery-v2">
           <div className="gallery-main">
             <img src={activeImg || shop.image_url || '/images/shop-1.jpg'} alt={shop.name} className="gallery-main__img" referrerPolicy="no-referrer" />
+            {allImages.length > 1 && (
+              <>
+                <button 
+                  className="gallery-nav-btn gallery-nav-btn--prev" 
+                  onClick={handlePrevImg}
+                  aria-label="Ảnh trước"
+                  type="button"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button 
+                  className="gallery-nav-btn gallery-nav-btn--next" 
+                  onClick={handleNextImg}
+                  aria-label="Ảnh sau"
+                  type="button"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            )}
           </div>
           {shop.images && shop.images.length > 0 && (
-            <div className="gallery-thumbs">
+            <div className="gallery-thumbs" ref={thumbsRef}>
               <div 
                 className={`gallery-thumb ${activeImg === shop.image_url ? 'gallery-thumb--active' : ''}`}
                 onClick={() => setActiveImg(shop.image_url)}
