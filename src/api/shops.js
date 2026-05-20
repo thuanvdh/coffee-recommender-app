@@ -32,6 +32,15 @@ export async function fetchMapShops() {
   }
 }
 
+export async function fetchTopRatedShops(limit = 10) {
+  try {
+    return await request(buildPath('/shops/top-rated', { limit }))
+  } catch (error) {
+    console.error('Lỗi khi tải top quán được đánh giá:', error)
+    return []
+  }
+}
+
 export async function fetchShopBySlug(slug) {
   try {
     return await request(`/shops/slug/${encodeURIComponent(slug)}`)

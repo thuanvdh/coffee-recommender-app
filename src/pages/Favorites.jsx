@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchShops } from '../api';
+import { fetchTopRatedShops } from '../api';
 import ShopCard from '../components/ShopCard';
 import { Link } from 'react-router-dom';
 
@@ -11,44 +11,8 @@ function Favorites() {
     const fetchTopRatedShops = async () => {
       try {
         setLoading(true);
-        const firstPage = await fetchShops({ page: 1, limit: 100 });
-        const total = firstPage?.total || 0;
-        const totalPages = Math.ceil(total / 100);
-        const remainingPages = Array.from(
-          { length: Math.max(totalPages - 1, 0) },
-          (_, index) => index + 2
-        );
-        const remainingResults = await Promise.all(
-          remainingPages.map(page => fetchShops({ page, limit: 100 }))
-        );
-        const shops = [
-          ...(firstPage?.shops || []),
-          ...remainingResults.flatMap(data => data?.shops || [])
-        ];
-
-        const shopsWithRating = shops.map(shop => {
-          const reviews = shop.reviews || [];
-          const reviewCount = reviews.length;
-          const avgRating = reviewCount > 0
-            ? reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviewCount
-            : 0;
-          return {
-            ...shop,
-            avgRating,
-            reviewCount
-          };
-        });
-
-        const sorted = shopsWithRating
-          .sort((a, b) => {
-            if (b.avgRating !== a.avgRating) {
-              return b.avgRating - a.avgRating;
-            }
-            return b.reviewCount - a.reviewCount;
-          })
-          .slice(0, 10);
-
-        setTopRatedShops(sorted);
+        const shops = await fetchTopRatedShops(10);
+        setTopRatedShops(shops);
       } catch (err) {
         console.error('Error fetching rated shops', err);
       } finally {
