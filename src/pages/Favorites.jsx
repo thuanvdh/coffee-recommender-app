@@ -8,7 +8,7 @@ function Favorites() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTopRatedShops = async () => {
+    const loadTopRatedShops = async () => {
       try {
         setLoading(true);
         const shops = await fetchTopRatedShops(10);
@@ -20,7 +20,7 @@ function Favorites() {
       }
     };
 
-    fetchTopRatedShops();
+    loadTopRatedShops();
   }, []);
 
   return (
