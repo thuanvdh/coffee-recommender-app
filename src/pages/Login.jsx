@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { loginAdmin } from '../api'
+import { getAdminSession, loginAdmin } from '../api'
 import { LogIn, ShieldAlert } from 'lucide-react'
 
 function Login() {
@@ -10,6 +10,13 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const redirectTo = location.state?.from || '/admin/suggestions'
+
+  useEffect(() => {
+    if (getAdminSession()?.access_token) {
+      navigate(redirectTo, { replace: true })
+    }
+  }, [navigate, redirectTo])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -23,7 +30,7 @@ function Login() {
         localStorage.setItem('admin_user', JSON.stringify(data))
         // Trigger a custom event so other components know the auth state changed
         window.dispatchEvent(new Event('authChange'))
-        navigate(location.state?.from || '/admin/suggestions', { replace: true })
+        navigate(redirectTo, { replace: true })
       } else {
         const err = await response.json()
         setError(err.detail || 'Đăng nhập thất bại. Vui lòng kiểm tra lại.')
