@@ -1,76 +1,41 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search as SearchIcon, SearchX, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react'
-import { fetchShops, fetchFilters } from '../api'
+import { Search as SearchIcon, SearchX } from 'lucide-react'
 import ShopCard, { ShopCardSkeleton } from '../components/ShopCard'
+import FilterSidebar from '../components/search/FilterSidebar'
+import Pagination from '../components/search/Pagination'
+import SearchResultsHeader from '../components/search/SearchResultsHeader'
+import { useShopSearch } from '../hooks/useShopSearch'
 
 function Search() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [shopsData, setShopsData] = useState(null)
-  const [filters, setFilters] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [showMoreGroups, setShowMoreGroups] = useState({})
-  const [collapsedGroups, setCollapsedGroups] = useState({})
   const [showSidebar, setShowSidebar] = useState(window.innerWidth > 768)
-
-  const toggleShowMore = (group) => {
-    setShowMoreGroups(prev => ({ ...prev, [group]: !prev[group] }))
-  }
-
-  const toggleCollapse = (group) => {
-    setCollapsedGroups(prev => ({ ...prev, [group]: !prev[group] }))
-  }
-
-  useEffect(() => {
-    fetchFilters().then(setFilters)
-  }, [])
-
-  useEffect(() => {
-    setLoading(true)
-    const params = {
-      search: searchParams.get('search'),
-      district: searchParams.getAll('district'),
-      purpose: searchParams.getAll('purpose'),
-      space: searchParams.getAll('space'),
-      amenity: searchParams.getAll('amenity'),
-      status: searchParams.get('status'),
-      lat: searchParams.get('lat'),
-      lon: searchParams.get('lon'),
-      page: parseInt(searchParams.get('page')) || 1,
-      limit: 25,
-    }
-    fetchShops(params).then(data => {
-      setShopsData(data)
-      setLoading(false)
-    })
-  }, [searchParams])
+  const { filters, loading, shopsData } = useShopSearch(searchParams)
 
   const handleCheckboxChange = (type, value, checked) => {
     const newParams = new URLSearchParams(searchParams)
-    newParams.set('page', 1) // Reset to page 1 on filter change
+    newParams.set('page', 1)
     if (checked) {
       if (type === 'status') {
         newParams.set(type, value)
       } else {
         newParams.append(type, value)
       }
+    } else if (type === 'status') {
+      newParams.delete(type)
     } else {
-      if (type === 'status') {
-        newParams.delete(type)
-      } else {
-        const currentArr = newParams.getAll(type).filter(v => v !== value)
-        newParams.delete(type)
-        currentArr.forEach(v => newParams.append(type, v))
-      }
+      const currentValues = newParams.getAll(type).filter((item) => item !== value)
+      newParams.delete(type)
+      currentValues.forEach((item) => newParams.append(type, item))
     }
     setSearchParams(newParams)
   }
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault()
-    const query = e.target.search.value.trim()
+  const handleSearchSubmit = (event) => {
+    event.preventDefault()
+    const query = event.target.search.value.trim()
     const newParams = new URLSearchParams(searchParams)
-    newParams.set('page', 1) // Reset to page 1 on search
+    newParams.set('page', 1)
     if (query) {
       newParams.set('search', query)
     } else {
@@ -86,110 +51,16 @@ function Search() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const Pagination = ({ total, page, limit }) => {
-    const totalPages = Math.ceil(total / limit)
-    if (totalPages <= 1) return null
-
-    const pages = []
-    let startPage = Math.max(1, page - 2)
-    let endPage = Math.min(totalPages, page + 2)
-
-    if (page <= 3) endPage = Math.min(5, totalPages)
-    if (page > totalPages - 2) startPage = Math.max(1, totalPages - 4)
-
-    for (let i = startPage; i <= endPage; i++) {
-        pages.push(i)
-    }
-
-    return (
-      <div className="pagination">
-        <button 
-          className="pagination__btn" 
-          disabled={page === 1}
-          onClick={() => handlePageChange(page - 1)}
-        >
-          <ChevronLeft size={18} />
-        </button>
-        
-        {startPage > 1 && (
-          <>
-            <button className="pagination__item" onClick={() => handlePageChange(1)}>1</button>
-            {startPage > 2 && <span className="pagination__dots">...</span>}
-          </>
-        )}
-
-        {pages.map(p => (
-          <button 
-            key={p} 
-            className={`pagination__item ${p === page ? 'is-active' : ''}`}
-            onClick={() => handlePageChange(p)}
-          >
-            {p}
-          </button>
-        ))}
-
-        {endPage < totalPages && (
-          <>
-            {endPage < totalPages - 1 && <span className="pagination__dots">...</span>}
-            <button className="pagination__item" onClick={() => handlePageChange(totalPages)}>{totalPages}</button>
-          </>
-        )}
-
-        <button 
-          className="pagination__btn" 
-          disabled={page === totalPages}
-          onClick={() => handlePageChange(page + 1)}
-        >
-          <ChevronRight size={18} />
-        </button>
-      </div>
-    )
-  }
-
-  const renderFilterGroup = (title, type, items) => {
-    if (!items) return null
-    const displayItems = showMoreGroups[type] ? items : items.slice(0, 10)
-    const isCollapsed = collapsedGroups[type]
-    
-    return (
-      <div className="filter-group">
-        <h3 className="filter-group__title" onClick={() => toggleCollapse(type)}>
-          {title}
-          {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-        </h3>
-        {!isCollapsed && (
-          <div className="filter-group__items">
-            {displayItems.map(item => (
-              <label key={item} className="filter-checkbox">
-                <input 
-                  type="checkbox" 
-                  checked={searchParams.getAll(type).includes(item)}
-                  onChange={(e) => handleCheckboxChange(type, item, e.target.checked)}
-                />
-                {item}
-              </label>
-            ))}
-            {items.length > 10 && (
-              <button className="filter-expand" onClick={() => toggleShowMore(type)}>
-                {showMoreGroups[type] ? <><ChevronUp size={14}/> Thu gọn</> : <><ChevronDown size={14}/> Xem thêm</>}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
     <div className="search-page">
       <header className="search-hero">
         <h1 className="search-hero__title">Tìm ngay quán cà phê gần bạn</h1>
         <form className="search-bar" onSubmit={handleSearchSubmit}>
-          <input 
-            type="text" 
+          <input
+            type="text"
             name="search"
-            className="search-bar__input" 
-            placeholder="Nhập tên quán, tên đường bạn muốn tìm ..." 
+            className="search-bar__input"
+            placeholder="Nhập tên quán, tên đường bạn muốn tìm ..."
             defaultValue={searchParams.get('search') || ''}
           />
           <button type="submit" className="search-bar__btn">
@@ -200,62 +71,26 @@ function Search() {
 
       <div className={`search-content ${!showSidebar ? 'is-sidebar-hidden' : ''}`}>
         {showSidebar && (
-          <aside className="sidebar">
-            <div className="filter-group">
-              <h3 className="filter-group__title" onClick={() => toggleCollapse('status')}>
-                Trạng thái
-                {collapsedGroups['status'] ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-              </h3>
-              {!collapsedGroups['status'] && (
-                <div className="filter-group__items">
-                  {[
-                    { label: 'Mới mở', value: 'new' },
-                    { label: 'Đang mở', value: 'open' },
-                    { label: 'Tạm đóng', value: 'closed_temp' },
-                    { label: 'Đã đóng', value: 'closed_permanent' }
-                  ].map(s => (
-                    <label key={s.value} className="filter-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={searchParams.get('status') === s.value}
-                        onChange={(e) => handleCheckboxChange('status', s.value, e.target.checked)}
-                      />
-                      {s.label}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {filters && (
-              <>
-                {renderFilterGroup('Phường (Xã)', 'district', filters.districts)}
-                {renderFilterGroup('Loại hình', 'purpose', filters.purposes)}
-                {renderFilterGroup('Không gian', 'space', filters.spaces)}
-                {renderFilterGroup('Tiện ích', 'amenity', filters.amenities)}
-              </>
-            )}
-          </aside>
+          <FilterSidebar
+            filters={filters}
+            searchParams={searchParams}
+            onChange={handleCheckboxChange}
+          />
         )}
 
         <section className="results">
-          <div className="results-header">
-            <button 
-              className="filter-toggle"
-              onClick={() => setShowSidebar(!showSidebar)}
-            >
-              {showSidebar ? <><X size={18} /> Ẩn bộ lọc</> : <><SlidersHorizontal size={18} /> Hiện bộ lọc</>}
-            </button>
-            <div className="search-count">
-              {loading ? 'Đang tìm kiếm...' : !shopsData ? 'Không tìm thấy kết quả' : shopsData.total === 0 ? '0 kết quả' : `Hiển thị ${(shopsData.page-1)*shopsData.limit + 1} – ${Math.min(shopsData.page*shopsData.limit, shopsData.total)} trong tổng số ${shopsData.total} quán`}
-            </div>
-          </div>
+          <SearchResultsHeader
+            loading={loading}
+            shopsData={shopsData}
+            showSidebar={showSidebar}
+            onToggleSidebar={() => setShowSidebar((value) => !value)}
+          />
 
           {!loading && shopsData?.total === 0 ? (
             <div className="empty-state">
               <SearchX size={64} strokeWidth={1.5} className="empty-state__icon" />
               <p className="empty-state__title">Không tìm thấy quán nào phù hợp</p>
-              <button 
+              <button
                 className="btn-primary empty-state__btn"
                 onClick={() => setSearchParams(new URLSearchParams())}
               >
@@ -266,8 +101,8 @@ function Search() {
             <>
               <div className="shop-grid">
                 {loading ? (
-                  Array.from({ length: 8 }).map((_, idx) => (
-                    <ShopCardSkeleton key={idx} />
+                  Array.from({ length: 8 }).map((_, index) => (
+                    <ShopCardSkeleton key={index} />
                   ))
                 ) : (
                   shopsData?.shops.map((shop) => (
@@ -277,10 +112,11 @@ function Search() {
               </div>
 
               {!loading && (
-                <Pagination 
-                  total={shopsData?.total || 0} 
-                  page={shopsData?.page || 1} 
-                  limit={shopsData?.limit || 25} 
+                <Pagination
+                  total={shopsData?.total || 0}
+                  page={shopsData?.page || 1}
+                  limit={shopsData?.limit || 25}
+                  onPageChange={handlePageChange}
                 />
               )}
             </>

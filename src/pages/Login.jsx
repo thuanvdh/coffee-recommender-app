@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { loginAdmin } from '../api'
 import { LogIn, ShieldAlert } from 'lucide-react'
 
@@ -9,6 +9,7 @@ function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -22,7 +23,7 @@ function Login() {
         localStorage.setItem('admin_user', JSON.stringify(data))
         // Trigger a custom event so other components know the auth state changed
         window.dispatchEvent(new Event('authChange'))
-        navigate('/admin/suggestions')
+        navigate(location.state?.from || '/admin/suggestions', { replace: true })
       } else {
         const err = await response.json()
         setError(err.detail || 'Đăng nhập thất bại. Vui lòng kiểm tra lại.')
@@ -36,7 +37,7 @@ function Login() {
 
   return (
     <div className="login-page">
-      <div className="section__inner" style={{ maxWidth: '400px', padding: '80px 20px' }}>
+      <div className="section__inner login-page__inner">
         <div className="login-card">
           <div className="login-header">
             <div className="login-icon">
@@ -73,8 +74,8 @@ function Login() {
               />
             </div>
 
-            <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', marginTop: '1rem' }}>
-              <LogIn size={18} style={{ marginRight: '8px' }} />
+            <button type="submit" className="btn-primary login-submit" disabled={loading}>
+              <LogIn size={18} />
               {loading ? 'Đang xác thực...' : 'Đăng nhập'}
             </button>
           </form>

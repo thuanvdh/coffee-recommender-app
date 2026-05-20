@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { fetchAdminSuggestions, approveSuggestion, rejectSuggestion } from '../api'
 import { Check, X, Clock, MapPin, Phone, User, Info } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 function AdminSuggestions() {
   const [suggestions, setSuggestions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [filter, setFilter] = useState('pending')
+  const navigate = useNavigate()
 
   useEffect(() => {
     loadSuggestions()
@@ -13,23 +16,34 @@ function AdminSuggestions() {
 
   const loadSuggestions = async () => {
     setLoading(true)
-    const data = await fetchAdminSuggestions(filter)
-    setSuggestions(data)
-    setLoading(false)
+    setError('')
+    try {
+      const data = await fetchAdminSuggestions(filter)
+      setSuggestions(data)
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) {
+        navigate('/login', { replace: true })
+        return
+      }
+      setError(err.message || 'Không thể tải danh sách đề xuất.')
+      setSuggestions([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleApprove = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn PHÊ DUYỆT quán này lên hệ thống?")) return
     try {
       const resp = await approveSuggestion(id)
-      if (resp.ok) {
-        alert("Đã phê duyệt thành công! Quán đã hiện trên hệ thống.")
-        loadSuggestions()
-      } else {
-        alert("Lỗi phê duyệt.")
-      }
+      alert(`Đã phê duyệt "${resp.name}" thành công!`)
+      loadSuggestions()
     } catch (e) {
-      alert("Lỗi kết nối.")
+      if (e.status === 401 || e.status === 403) {
+        navigate('/login', { replace: true })
+        return
+      }
+      alert(e.message || "Lỗi phê duyệt.")
     }
   }
 
@@ -37,14 +51,14 @@ function AdminSuggestions() {
     if (!window.confirm("Bạn có chắc chắn muốn TỪ CHỐI đề xuất này?")) return
     try {
       const resp = await rejectSuggestion(id)
-      if (resp.ok) {
-        alert("Đã từ chối đề xuất.")
-        loadSuggestions()
-      } else {
-        alert("Lỗi.")
-      }
+      alert(resp?.message || "Đã từ chối đề xuất.")
+      loadSuggestions()
     } catch (e) {
-      alert("Lỗi kết nối.")
+      if (e.status === 401 || e.status === 403) {
+        navigate('/login', { replace: true })
+        return
+      }
+      alert(e.message || "Lỗi từ chối đề xuất.")
     }
   }
 
@@ -77,6 +91,8 @@ function AdminSuggestions() {
 
         {loading ? (
           <div className="admin-loading">Đang tải dữ liệu...</div>
+        ) : error ? (
+          <div className="admin-empty">{error}</div>
         ) : suggestions.length === 0 ? (
           <div className="admin-empty">Không có đề xuất nào trong danh sách.</div>
         ) : (

@@ -9,6 +9,7 @@ import AdminSuggestions from './pages/AdminSuggestions'
 import Login from './pages/Login'
 import MapPage from './pages/MapPage'
 import Favorites from './pages/Favorites'
+import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 
 function App() {
   return (
@@ -24,7 +25,14 @@ function App() {
           <Route path="/about.html" element={<About />} />
           <Route path="/suggest" element={<Suggest />} />
           <Route path="/suggest.html" element={<Suggest />} />
-          <Route path="/admin/suggestions" element={<AdminSuggestions />} />
+          <Route
+            path="/admin/suggestions"
+            element={
+              <ProtectedAdminRoute>
+                <AdminSuggestions />
+              </ProtectedAdminRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/favorites" element={<Favorites />} />

@@ -121,8 +121,8 @@ function Detail() {
     }
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '10rem' }}>Đang tải thông tin quán...</div>
-  if (!shop) return <div style={{ textAlign: 'center', padding: '10rem' }}>Không tìm thấy thông tin quán.</div>
+  if (loading) return <div className="detail-state">Đang tải thông tin quán...</div>
+  if (!shop) return <div className="detail-state">Không tìm thấy thông tin quán.</div>
 
   const badgeText = shop.status === 'new' ? 'Mới mở' :
                     shop.status === 'closed_temp' ? 'Tạm đóng' :
@@ -192,7 +192,6 @@ function Detail() {
             target="_blank"
             rel="noopener noreferrer"
             className="shop-detail__address"
-            style={{ color: 'inherit', textDecoration: 'none' }}
           >
             <MapPin size={20} />
             <span>{shop.address ? `${shop.address}, ` : ''}{shop.district}, Đà Nẵng</span>
