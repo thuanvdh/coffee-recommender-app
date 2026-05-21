@@ -5,11 +5,15 @@ import Footer from './Footer'
 import Drawer from './Drawer'
 import BottomNav from './BottomNav'
 
+import AdminHeader from './AdminHeader'
+
 function Layout({ children }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
   const location = useLocation()
+
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -33,11 +37,15 @@ function Layout({ children }) {
 
   return (
     <div className="app-container">
-      <Header isScrolled={isScrolled} toggleDrawer={toggleDrawer} theme={theme} toggleTheme={toggleTheme} />
-      <Drawer isOpen={isDrawerOpen} closeDrawer={() => setIsDrawerOpen(false)} theme={theme} toggleTheme={toggleTheme} />
+      {isAdminRoute ? (
+        <AdminHeader isScrolled={isScrolled} toggleDrawer={toggleDrawer} theme={theme} toggleTheme={toggleTheme} />
+      ) : (
+        <Header isScrolled={isScrolled} toggleDrawer={toggleDrawer} theme={theme} toggleTheme={toggleTheme} />
+      )}
+      <Drawer isOpen={isDrawerOpen} closeDrawer={() => setIsDrawerOpen(false)} theme={theme} toggleTheme={toggleTheme} isAdminRoute={isAdminRoute} />
       <main>{children}</main>
-      <Footer />
-      <BottomNav />
+      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <BottomNav />}
     </div>
   )
 }

@@ -21,3 +21,26 @@ export async function rejectSuggestion(id) {
     headers: { 'bypass-tunnel-reminder': 'true' },
   })
 }
+
+export async function deleteShop(id) {
+  return request(`/shops/${id}`, {
+    method: 'DELETE',
+    auth: true,
+    headers: { 'bypass-tunnel-reminder': 'true' },
+  })
+}
+
+export async function fetchAdminShops(params = {}) {
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== '') {
+      searchParams.append(key, value)
+    }
+  })
+  const query = searchParams.toString()
+  const path = query ? `/admin/shops?${query}` : '/admin/shops'
+  
+  return request(path, {
+    auth: true,
+  })
+}

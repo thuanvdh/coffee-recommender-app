@@ -70,27 +70,10 @@ function Header({ isScrolled, toggleDrawer, theme, toggleTheme }) {
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} color="#D4BBA5" />}
           </button>
           {isAdmin && (
-            <>
-              <Link to="/admin/suggestions" className={`header__nav-link ${isActive('/admin/suggestions') ? 'header__nav-link--active' : ''}`} style={{ color: '#0369A1' }}>
-                <Menu size={18} />
-                Quản lý
-              </Link>
-              <button 
-                onClick={handleLogout} 
-                className="header__nav-link" 
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  color: '#EF4444', 
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  padding: '8px 12px'
-                }}
-              >
-                <LogOut size={18} />
-                Đăng xuất
-              </button>
-            </>
+            <Link to="/admin/suggestions" className="header__nav-link" style={{ color: '#0369A1', fontWeight: 'bold' }}>
+              <Menu size={18} />
+              Trang Quản trị
+            </Link>
           )}
         </nav>
 

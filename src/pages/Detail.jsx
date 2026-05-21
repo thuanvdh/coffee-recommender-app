@@ -186,15 +186,13 @@ function Detail() {
           </div>
           
           <a 
-            href={shop.latitude && shop.longitude 
-              ? `https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`
-              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${shop.name} ${shop.address || ''} Đà Nẵng`)}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${shop.name} Đà Nẵng`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="shop-detail__address"
           >
             <MapPin size={20} />
-            <span>{shop.address ? `${shop.address}, ` : ''}{shop.district}, Đà Nẵng</span>
+            <span>{[shop.address, (shop.district && (!shop.address || !shop.address.includes(shop.district))) ? shop.district : null, 'Đà Nẵng'].filter(Boolean).join(', ')}</span>
           </a>
 
           <div className="shop-detail__section">
@@ -299,7 +297,7 @@ function Detail() {
             </div>
           )}
           
-          <div className="shop-detail__section shop-detail__reviews">
+          <div id="review-section" className="shop-detail__section shop-detail__reviews">
             <h2 className="shop-detail__section-title">Nhận xét từ cộng đồng ({shop.reviews?.length || 0})</h2>
             
             <form className="review-form" onSubmit={handleReviewSubmit}>
@@ -443,9 +441,7 @@ function Detail() {
           <h3 className="widget__title">Hành động</h3>
           <div className="widget__actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <a 
-              href={shop.latitude && shop.longitude 
-                ? `https://www.google.com/maps/search/?api=1&query=${shop.latitude},${shop.longitude}`
-                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${shop.name} ${shop.address || ''} Đà Nẵng`)}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${shop.name} Đà Nẵng`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"
@@ -454,7 +450,19 @@ function Detail() {
               <MapPin size={20} />
               Chỉ đường
             </a>
-            <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <button 
+              className="btn-secondary" 
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              onClick={() => {
+                const reviewSection = document.getElementById('review-section');
+                if (reviewSection) {
+                  reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  // Focus the input name if possible
+                  const nameInput = document.getElementById('reviewer-name');
+                  if (nameInput) nameInput.focus({ preventScroll: true });
+                }
+              }}
+            >
               <MessageSquare size={20} />
               Gửi nhận xét
             </button>

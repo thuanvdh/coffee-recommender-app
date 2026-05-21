@@ -34,9 +34,9 @@ function BottomNav() {
         Giới thiệu
       </Link>
       {isAdmin && (
-        <Link to="/admin/suggestions" className={`bottom-nav__item ${isActive('/admin/suggestions') ? 'bottom-nav__item--active' : ''}`} style={{ color: '#0369A1' }}>
+        <Link to="/admin/suggestions" className="bottom-nav__item" style={{ color: '#0369A1', fontWeight: 'bold' }}>
           <Menu size={20} />
-          Quản lý
+          Quản trị
         </Link>
       )}
     </nav>

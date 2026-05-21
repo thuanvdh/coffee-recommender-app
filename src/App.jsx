@@ -6,6 +6,7 @@ import Detail from './pages/Detail'
 import About from './pages/About'
 import Suggest from './pages/Suggest'
 import AdminSuggestions from './pages/AdminSuggestions'
+import AdminShops from './pages/AdminShops'
 import Login from './pages/Login'
 import MapPage from './pages/MapPage'
 import Favorites from './pages/Favorites'
@@ -30,6 +31,14 @@ function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminSuggestions />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/shops"
+            element={
+              <ProtectedAdminRoute>
+                <AdminShops />
               </ProtectedAdminRoute>
             }
           />
