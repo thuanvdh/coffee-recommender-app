@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Search from './pages/Search'
@@ -26,6 +26,7 @@ function App() {
           <Route path="/about.html" element={<About />} />
           <Route path="/suggest" element={<Suggest />} />
           <Route path="/suggest.html" element={<Suggest />} />
+          <Route path="/admin" element={<Navigate to="/admin/suggestions" replace />} />
           <Route
             path="/admin/suggestions"
             element={
