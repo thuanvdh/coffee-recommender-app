@@ -1,5 +1,16 @@
-export const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+let base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+
+// Remove trailing slash if present
+if (base.endsWith('/')) {
+  base = base.slice(0, -1)
+}
+
+// Ensure the URL ends with /api since all endpoints use it
+if (!base.endsWith('/api')) {
+  base = `${base}/api`
+}
+
+export const API_BASE = base
 
 export class ApiError extends Error {
   constructor(message, { status, payload } = {}) {
